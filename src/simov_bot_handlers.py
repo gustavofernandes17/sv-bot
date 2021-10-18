@@ -1,90 +1,27 @@
-import cv2 as cv
-import time
-import requests
-import os
-import glob
-import shutil
+import cv2
+import urllib.request
+import numpy as np
+import ssl
+
+ctx = ssl.create_default_context()
+ctx.check_hostname = False
+ctx.verify_mode = ssl.CERT_NONE    
 
 
-URL = 'http://192.168.43.144:80/capture'
-
-
-
+stream = urllib.request.urlopen('http://192.168.43.144:81/stream')
 
 def start_recording():
-
-    start_time = time.time()
-    specified_time = 15
-
-    img_array = []
-    img_file_name_array = []
-
+    bytesa = b''# MAKE IT BYTES
     while True:
+        bytesa += stream.read(1024)
+        a = bytesa.find(b'\xff\xd8')
+        b = bytesa.find(b'\xff\xd9')
+        if a != -1 and b != -1:
+            jpg = bytesa[a:b+2]
+            bytesa = bytesa[b+2:]
+            i = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+            cv2.imshow('i', i)
+            if cv2.waitKey(1) == 27:
+                exit(0)
 
-        current_time = time.time()
-        elapsed_time = current_time - start_time
-
-        if elapsed_time > specified_time:
-            print("Finished iterating in: " + str(int(elapsed_time)) + " seconds")
-            break
-
-        response_img = requests.get(URL, stream=True)
-
-        print(response_img.status_code)
-
-        if response_img.status_code == 200: 
-
-            response_img.raw.decode_content = True
-
-            img_name = f'frame_{current_time}.jpg'
-
-
-            with open(f'src/imgs/{img_name}', 'wb') as frame_buffer:
-                
-                shutil.copyfileobj(response_img.raw, frame_buffer)
-
-                img_file_name_array.append(img_name)
-            
-    
-
-        else:
-            print('algo deu errado')
-
-
-    for filename in glob.glob('/home/gustavofernandes/Documents/sv-recorder/src/imgs/*.jpg'):
-        img = cv.imread(filename)
-        print(img)
-        
-        height, width, layers = img.shape
-
-        size = (width, height)
-
-        img_array.append(img)     
-
-    out = cv.VideoWriter('test.avi', cv.VideoWriter_fourcc(*'DIVX'), 3, size) 
-
-    for i in range(len(img_array)):
-        out.write(img_array[i])
-
-    out.release()
-
-
-def start_recording_from_stream():
-    
-    cap = cv.VideoCapture(URL)
-
-    while(cap.isOpened()):
-
-        ret, frame = cap.read()
-
-        if not ret:
-            break
-
-        cv.imshow('frame', frame)
-
-        k = cv.waitKey(1)
-        if k == 27:
-            break
-
-# start_recording_from_stream()
 start_recording()

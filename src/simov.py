@@ -14,7 +14,6 @@ from os.path import isfile, join
 
     # updater.start_polling()
     # updater.idle()
-    
 
 
 class SimovTelegram():
@@ -94,7 +93,7 @@ class SimovTelegram():
                 )
             
             remove(self.simov_recorder.video_path + '/' + filenames[0])
-            
+          
         except: 
             context.bot.send_message(
                 chat_id=update.effective_chat.id, 

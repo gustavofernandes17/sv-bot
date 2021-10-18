@@ -16,7 +16,7 @@ class Recorder:
         self.video_path = os.getcwd() + '/src/videos'
         self.jpg_buffers_path = os.getcwd() + '/src/jpg_buffer/'
 
-        self.jpg_capture_url = 'http://8.tcp.ngrok.io:12744/capture'
+        self.jpg_capture_url = 'http://192.168.15.67:80/jpg'
 
         self.errors = []
 
@@ -83,8 +83,8 @@ class Recorder:
             jpg_array.append(img)
 
         out = cv2.VideoWriter(
-            f'{self.video_path}/simov_captura_{int(time())}-{self.elapsed_time}.avi',
-            cv2.VideoWriter_fourcc(*'DIVX'), 
+            f'{self.video_path}/simov_captura_{int(time())}-{self.elapsed_time}.mp4',
+            cv2.VideoWriter_fourcc(*'MP4V'), 
             self.fps, 
             size
         )
